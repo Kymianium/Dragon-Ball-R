@@ -1,10 +1,10 @@
 from character import Character
-import random, socket
+import random, socket, time
 
 HOST = '127.0.0.1'
 PORT = 1729
 
-online = True
+online = False
 s = None
 pj = None
 
@@ -19,6 +19,22 @@ class color:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
     END = '\033[0m'
+
+def d(num, stat = None):
+    global online
+    global pj
+    value = random.randint(1,num+1)
+    if online and pj:
+        global s
+        if stat != None:
+            cadena = "La tirada de " + str(stat) + " de " + pj.nombre + " ha sido " + str(value) + " + [" + pj.stats[stat] + "]"
+        else:
+            cadena = "La tirada de " + pj.nombre + " ha sido " + str(value)
+        s.sendall(cadena.encode("utf-8"))
+    return value
+
+
+
 
 def create():
     while(True):
@@ -150,8 +166,8 @@ def create():
 
 
 def load():
+    global s
     global pj
-
     file = open("characters.txt", "r")
     linea = file.readline()
     if not linea:
@@ -190,7 +206,8 @@ def load():
     zenis = int(file.readline())
     pj = Character(pejota, str, dst, ki, car, pi, jin, log, co, raza, clase, wpn, life, cki, zenis)
     if online:
-        s.send(pejota.encode('utf-8'))
+        print("Se ha enviado una señal")
+        s.sendall(pejota.encode('utf-8'))
     play()
 
 
@@ -283,12 +300,13 @@ def process_action(action):
                 print("Tu balance actual es de " + str(pj.nofils) + " nofils")
         input()
     elif action == "c":
-        tirada = random.randint(1,3)
+        tirada = d(2)
         print("Has elegido cargar. Consigues " + str(tirada) + " cargas de ki.")
         pj.cargas_ki += tirada
         input()
 
 def play():
+    global s
     global pj
     while (True):
         clear()
@@ -306,34 +324,59 @@ def play():
     main_menu()
 
 
-
+def connect():
+    global s
+    global online
+    clear()
+    print("¿Cuál es la IP a la que quieres conectarte?")
+    HOST = str(input())
+    print("¿Qué puerto es el que está abierto?")
+    PORT = int(input())
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.connect((HOST, PORT))
+    except:
+        print("No se ha podido establecer la conexión.")
+        return
+    time.sleep(1)
+    s.sendall(b'El jugador ha establecido conexion.')
+    clear()
+    print("Estás en línea. Bienvenido a Dragon Ball R Online.")
+    input()
+    online = True
+    clear()
 
 def main_menu():
-    #COMIENZA EL PROGRAMA
-    print(color.BOLD + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t Dragon Ball Rol" + color.END)
     #MENÚ PRINCIPAL
     while(True):
-        print("Selecciona una opción:\n \t -> Crear un personaje [crear]\n\t -> Cargar un personaje [cargar]")
+        #COMIENZA EL PROGRAMA
+        print(color.BOLD + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t Dragon Ball Rol" + color.END)
+        if online:
+            print(color.BOLD + "Status: " + color.GREEN + "ONLINE" + color.END)
+        else:
+            print(color.BOLD + "Status: " + color.RED + "OFFLINE" + color.END)
+        print("Selecciona una opción:\n \t -> Crear un personaje [crear]\n\t -> Cargar un personaje [cargar]\n\t -> Conectarse al servidor [conectar]\n\t -> Comprobar conexión con el servidor [ping]")
         command = input()
         if command.lower() == "crear":
             create()
         elif command.lower() == "cargar":
             load()
+        elif command.lower() == "conectar":
+            connect()
+        elif command.lower() == "ping":
+            ping()
         else:
             print("No has escrito un comando correcto. Vuelve a intentarlo.")
-
-#En primer lugar, nos conectamos al host
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-try:
-    s.connect((HOST, PORT))
-except:
-    online = False
-if online:
-    s.sendall(b'Nueva conexion')
-#    data = s.recv(1024)
-#print('Recibido', repr(data))
-
-#Ahora, llamamos al main menu
-
+def ping():
+    global s
+    global online
+    if online:
+        s.sendall(b'Ping')
+        print("Al host debe haberle llegado un mensaje.")
+        input()
+        clear()
+    else:
+        print("No estás online.")
+        input()
+        clear()
 main_menu()
