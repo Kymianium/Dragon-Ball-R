@@ -168,6 +168,7 @@ def create():
 def load():
     global s
     global pj
+    global online
     file = open("characters.txt", "r")
     linea = file.readline()
     if not linea:
@@ -206,13 +207,15 @@ def load():
     zenis = int(file.readline())
     pj = Character(pejota, str, dst, ki, car, pi, jin, log, co, raza, clase, wpn, life, cki, zenis)
     if online:
-        print("Se ha enviado una señal")
-        s.sendall(pejota.encode('utf-8'))
+        print("login succesfull")
+        message = "login " + pejota
+        s.sendall(message.encode('utf-8'))
     play()
 
 
 def clear():
-    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+    for i in range(0,100):
+        print(" \n")
 
 
 
@@ -330,8 +333,6 @@ def connect():
     clear()
     print("¿Cuál es la IP a la que quieres conectarte?")
     HOST = str(input())
-    print("¿Qué puerto es el que está abierto?")
-    PORT = int(input())
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.connect((HOST, PORT))
@@ -370,6 +371,7 @@ def main_menu():
 def ping():
     global s
     global online
+    clear()
     if online:
         s.sendall(b'Ping')
         print("Al host debe haberle llegado un mensaje.")
