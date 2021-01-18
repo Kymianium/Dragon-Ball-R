@@ -17,7 +17,7 @@ class color:
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-if len(sys.argv) != 3:
+if len(sys.argv) != 2:
     print("Fallo en los argumentos, por favor, indica una IP y un puerto")
     exit()
 
