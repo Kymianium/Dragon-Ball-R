@@ -18,3 +18,5 @@ class Character:
         self.cargas_ki = cki
         self.nofils = zenis
         self.items = {}
+    def set_items(self, items):
+        self.items = items

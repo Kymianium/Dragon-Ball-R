@@ -34,15 +34,12 @@ except:
 
 
 
-
-
-
-
 def main_menu():
     global s
     while True:
         action = rol.process_input(color.BOLD + "\t\tDragon Ball Rol: Master Edition\n\n"
-        + color.END + "Hola, Juan. " + random.choice(saludo) + "\n\t -> Lista de jugadores [lista]",
+        + color.END + "Hola, Juan. " + random.choice(saludo) + "\n\t -> Lista de jugadores [lista]" +
+        "\n\t -> Crear personaje [crear]\n\t -> Enviar mensaje [mensaje]\n\t -> Cargar personaje [cargar]\n\t -> Tienda [tienda]\n\t -> Subir de nivel [nivel]",
         set(["lista"]))
         if action == "lista":
             s.sendall("admin list".encode("utf-8"))
@@ -51,3 +48,6 @@ def main_menu():
 
 #Comienzo del programa
 main_menu()
+
+
+#Una vez que hayas cargado un personaje, entonces debes poder tirar dados

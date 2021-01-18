@@ -35,7 +35,7 @@ def playerthread(conn, addr):
         try:
             message = conn.recv(2048)
             if message:
-                command = message.decode("utf-8").split()
+                command = message.decode("utf-8").split(' ', 1)
                 print(command)
                 if command[0] == "admin":
                     if command[1] == "list":
@@ -46,17 +46,14 @@ def playerthread(conn, addr):
                         conn.sendall(answer.encode("utf-8"))
                         print("Se le envía la lista. " + answer)
                 elif command[0] == "login":
-                    print("Login:")
-                    name = ""
-                     #print(command.size())
-                    for i in range(1, command.len()):
-                        name = name + command[i]
-                    #player_list[name] = conn
-                    print("Añadido " + name + " a la lista de jugadores.")
+                    print(color.PURPLE + "Login:" + color.END)
+                    print("Añadido " + command[1] + " a la lista de jugadores.")
                 else:
                     print(message.decode("utf-8"))
         except:
             continue
+
+
 
 
 while True:
@@ -65,3 +62,7 @@ while True:
     t = threading.Thread(target = playerthread, args = (conn, addr))
     t.start()
     #conn.close()
+
+
+#TIENDA
+#BOLSA

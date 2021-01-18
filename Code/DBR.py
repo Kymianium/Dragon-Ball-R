@@ -27,7 +27,7 @@ def d(num, stat = None):
     if online and pj:
         global s
         if stat != None:
-            cadena = "La tirada de " + str(stat) + " de " + pj.nombre + " ha sido " + str(value) + " + [" + pj.stats[stat] + "]"
+            cadena = "La tirada de " + str(stat) + " de " + pj.nombre + " ha sido " + str(value) + " + [" + str(pj.stats[stat]) + "]"
         else:
             cadena = "La tirada de " + pj.nombre + " ha sido " + str(value)
         s.sendall(cadena.encode("utf-8"))
@@ -206,6 +206,11 @@ def load():
     cki = int(file.readline())
     zenis = int(file.readline())
     pj = Character(pejota, str, dst, ki, car, pi, jin, log, co, raza, clase, wpn, life, cki, zenis)
+    items = {}
+    for line in file:
+        raw = line.split(' ', 2)
+        items[raw[2]] = [int(raw[0]), int(raw[1])]
+    pj.set_items(items)
     if online:
         print("login succesfull")
         message = "login " + pejota
@@ -237,21 +242,21 @@ def process_action(action):
         if action=="c":
             clear()
             action = process_input("Elige tu ataque:\n\t-> Puñetazo [p]\n\t-> Patada [t]\n\t-> Con el arma [a]", set(["p", "t", "a"]))
-            tirada = random.randint(1,21)
+            tirada = d(20, "fuerza")
             print("Has elegido atacar y has sacado " + str(tirada) + " + [" + str(pj.stats["fuerza"]) + "] = " + str(tirada + pj.stats["fuerza"]))
             if action == pj.arma:
-                print("Deberías hacer " + str(random.randint(1,5)) + " + [" + str(pj.stats["fuerza"]) + "] de daño (ataque diestro).")
+                print("Deberías hacer " + str(d(4, "fuerza")) + " + [" + str(pj.stats["fuerza"]) + "] de daño (ataque diestro).")
             else:
-                print("Deberías hacer " + str(random.randint(1,3)) + " + [" + str(pj.stats["fuerza"]) + "] de daño (ataque débil).")
+                print("Deberías hacer " + str(d(2, "fuerza")) + " + [" + str(pj.stats["fuerza"]) + "] de daño (ataque débil).")
             input()
 
         elif action=="k":
             clear()
             action = process_input("Elige una acción:\n\t-> Bola [b]\n\t-> Técnicas [t]", set(["t", "b"]))
-            tirada = random.randint(1,21)
+            tirada = d(20, "destreza")
             if action == "b":
                 print("Has elegido atacar y has sacado " + str(tirada) + " + [" + str(pj.stats["destreza"]) + "] = " + str(tirada + pj.stats["destreza"]))
-                print("Deberías hacer " + str(random.randint(1,3)) + " + [" + str(pj.stats["ki"]) + "] de daño.")
+                print("Deberías hacer " + str(d(2)) + " + [" + str(pj.stats["ki"]) + "] de daño.")
             elif action == "t":
                 if pj.cargas_ki < 2:
                     print("No tienes suficiente ki")
@@ -264,14 +269,14 @@ def process_action(action):
                             input()
                             continue
                         break
-                    print("Tu tirada de ki es de " + str(random.randint(1,21)) + " + [" + str(pj.stats["ki"]) + "].")
+                    print("Tu tirada de ki es de " + str(d(20, "ki")) + " + [" + str(pj.stats["ki"]) + "].")
                     if action == "m":
                         clear()
-                        print("Con tu técnica media, haces " + str(random.randint(1,7)) + " + [" + str(pj.stats["ki"]) + "] de daño." )
+                        print("Con tu técnica media, haces " + str(d(6, "ki")) + " + [" + str(pj.stats["ki"]) + "] de daño." )
                         pj.cargas_ki -= 2
                     elif action == "f":
                         clear()
-                        print("Con tu técnica fuerte, haces " + str(random.randint(1,11)) + " + [" + str(pj.stats["ki"]) + "] de daño." )
+                        print("Con tu técnica fuerte, haces " + str(d(10, "ki")) + " + [" + str(pj.stats["ki"]) + "] de daño." )
                         pj.cargas_ki -= 4
             input()
     elif action == "i":
@@ -280,18 +285,21 @@ def process_action(action):
         print(color.PURPLE + "Tienes " + str(pj.nofils) + " nofils." + color.END)
         print(color.BOLD + "Tus objetos son:" + color.END)
         for item in pj.items.keys():
-            print("-> " + item)
+            print("-> " + item + " x" + str(pj.items[item][1]) + "\t\t\t" + str(float(pj.items[item][0])/1000) + "kg")
         action = process_input("Selecciona una opción:\n\tAñadir objeto [a]\tModificar nofils [m]\tTirar objeto [t]\tNotas[n]", set(["a", "m", "t", "n"]))
         if action == "a":
             clear()
             print("¿Qué objeto quieres añadir?")
             objeto = input()
             clear()
-            print(objeto + " ha sido añadido a tu inventario.")
             if objeto in pj.items.keys():
-                pj.items[objeto]+=1
+                pj.items[objeto][1] += 1
             else:
-                pj.items[objeto] = 1
+                print("¿Cuántos gramos pesa?")
+                peso = int(input())
+                pj.items[objeto] = [peso, 1]
+            print(objeto + " ha sido añadido a tu inventario.")
+
         elif action == "m":
             clear()
             print("¿Cuánto cambian tus nofils?")
@@ -307,6 +315,14 @@ def process_action(action):
         print("Has elegido cargar. Consigues " + str(tirada) + " cargas de ki.")
         pj.cargas_ki += tirada
         input()
+    elif action == "e":
+        print("Tu tirada de esquivar ha sido " + str(d(20, "destreza")) + " + [" + str(pj.stats["destreza"]) + "]")
+        input()
+    else:
+        clear()
+        print("Esa no es una opción mongolo")
+        input()
+        clear()
 
 def play():
     global s
@@ -319,9 +335,34 @@ def play():
         print(color.BLUE + "\t" + "PILOTAJE = " + str(pj.stats["pilotaje"]) + "\tJINCHONERÍA = " + str(pj.stats["jinchoneria"]) + color.END)
         print(color.BLUE + "\t" + "LÓGICA = " + str(pj.stats["logica"]) + "\tCOPIA = " + str(pj.stats["copia"]) + color.END)
         print(color.GREEN + "\t" + "VIDA = " + str(pj.salud_actual) + "/" + str(pj.salud) + "\tCARGAS DE KI = " + str(pj.cargas_ki) + color.END)
-        print("Elige una acción:\n\tAtacar [a]\tInventario [i]\tCargar [c]\tVolver [v]")
+        print("Elige una acción:\n\tAtacar [a]\tEsquivar [e]\tInventario [i]\tCargar [c]\tVolver [v]")
         action = input()
         if action.lower() == "v":
+            #Volver
+
+
+
+            file = open(pj.nombre + ".txt", "w")
+            file.write("Personaje de DBR:\n")
+            file.write(str(pj.stats["fuerza"]) + "\n")
+            file.write(str(pj.stats["destreza"])+ "\n")
+            file.write(str(pj.stats["ki"]) + "\n")
+            file.write(str(pj.stats["carisma"]) + "\n")
+            file.write(str(pj.stats["pilotaje"]) + "\n")
+            file.write(str(pj.stats["jinchoneria"]) + "\n")
+            file.write(str(pj.stats["logica"]) + "\n")
+            file.write(str(pj.stats["copia"]) + "\n")
+            file.write(str(pj.raza) + "\n")
+            file.write(str(pj.clase) + "\n")
+            file.write(pj.arma + "\n")
+            file.write(str(pj.salud) + "\n")
+            file.write(str(pj.cargas_ki) + "\n")
+            file.write(str(pj.nofils) + "\n")
+            for item in pj.items.keys():
+                file.write(str(pj.items[item][0]) + " " + str(pj.items[item][1]) + " " + str(item))
+            file.close()
+
+
             break
         process_action(action.lower())
     main_menu()
