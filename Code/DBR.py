@@ -43,12 +43,8 @@ def online_thread():
         try:
             message = s.recv(2048)
             if message:
-                clear()
-                print(color.BLUE + "Nuevo mensaje del master:" + color.END)
+                print(color.BLUE + "\nNuevo mensaje del master:" + color.END)
                 print(message.decode("utf-8"))
-                print("Presiona enter para continuar")
-                input()
-                print(context)
         except:
             continue
 
