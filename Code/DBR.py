@@ -1,5 +1,5 @@
 from character import Character
-import random, socket, time
+import random, socket, time, threading
 
 HOST = '127.0.0.1'
 PORT = 1729
@@ -7,6 +7,8 @@ PORT = 1729
 online = False
 s = None
 pj = None
+
+context = ""
 
 class color:
     PURPLE = '\033[95m'
@@ -23,7 +25,7 @@ class color:
 def d(num, stat = None):
     global online
     global pj
-    value = random.randint(1,num+1)
+    value = random.randint(1,num)
     if online and pj:
         global s
         if stat != None:
@@ -33,7 +35,22 @@ def d(num, stat = None):
         s.sendall(cadena.encode("utf-8"))
     return value
 
-
+def online_thread():
+    global s
+    global context
+    print("ONLINE")
+    while True:
+        try:
+            message = s.recv(2048)
+            if message:
+                clear()
+                print(color.BLUE + "Nuevo mensaje del master:" + color.END)
+                print(message.decode("utf-8"))
+                print("Presiona enter para continuar")
+                input()
+                print(context)
+        except:
+            continue
 
 
 def create():
@@ -209,7 +226,7 @@ def load():
     items = {}
     for line in file:
         raw = line.split(' ', 2)
-        items[raw[2]] = [int(raw[0]), int(raw[1])]
+        items[raw[2][:-1]] = [int(raw[0]), int(raw[1])]
     pj.set_items(items)
     if online:
         print("login succesfull")
@@ -223,17 +240,32 @@ def clear():
         print(" \n")
 
 
-
-
 def process_input(str, values):
     while(True):
-        print(str)
+        printc(str)
         action = input()
         if action.lower() in values:
-            return action
+            return action.lower()
         else:
             print("La opción seleccionada no es válida.")
 
+def read_from_master(s):
+    while True:
+        try:
+            message = s.recv(2048)
+            if message:
+                command = message.decode("utf-8").split(' ', 1)
+                print(command)
+                if command[0] == "msg":
+                    clear()
+                    print(color.BOLD + "Nuevo mensaje del master:" + color.END)
+                    print(command[1])
+                    input()
+                    clear()
+                else:
+                    print(message.decode("utf-8"))
+        except:
+            continue
 
 def process_action(action):
     if action=="a":
@@ -249,7 +281,6 @@ def process_action(action):
             else:
                 print("Deberías hacer " + str(d(2, "fuerza")) + " + [" + str(pj.stats["fuerza"]) + "] de daño (ataque débil).")
             input()
-
         elif action=="k":
             clear()
             action = process_input("Elige una acción:\n\t-> Bola [b]\n\t-> Técnicas [t]", set(["t", "b"]))
@@ -269,77 +300,114 @@ def process_action(action):
                             input()
                             continue
                         break
+                    clear()
                     print("Tu tirada de ki es de " + str(d(20, "ki")) + " + [" + str(pj.stats["ki"]) + "].")
                     if action == "m":
-                        clear()
                         print("Con tu técnica media, haces " + str(d(6, "ki")) + " + [" + str(pj.stats["ki"]) + "] de daño." )
                         pj.cargas_ki -= 2
                     elif action == "f":
-                        clear()
                         print("Con tu técnica fuerte, haces " + str(d(10, "ki")) + " + [" + str(pj.stats["ki"]) + "] de daño." )
                         pj.cargas_ki -= 4
             input()
+    elif action=="d":
+        action = process_input("¿De qué quieres que sea tu tirada?"
+        + "\n\tFuerza [F]\tDestreza [D]\tKi [K]\tJinchonería [J]\tCopia [C]\n\tCarisma [A]\tPilotaje [P]\tLógica [L]\tTirada plana [N]", set(["f", "d", "k", "j", "c", "a", "p", "l", "n"]))
+        clear()
+        if action == "f":
+            print("Tu tirada de fuerza ha sido de " + str(d(20, "fuerza")) + " + [" + str(pj.stats["fuerza"]) + "]")
+            input()
+        elif action == "d":
+            print("Tu tirada de destreza ha sido de " + str(d(20, "destreza")) + " + [" + str(pj.stats["destreza"]) + "]")
+            input()
+        elif action == "k":
+            print("Tu tirada de ki ha sido de " + str(d(20, "ki")) + " + [" + str(pj.stats["ki"]) + "]")
+            input()
+        elif action == "j":
+            print("Tu tirada de jinchonería ha sido de " + str(d(20, "jinchoneria")) + " + [" + str(pj.stats["jinchoneria"]) + "]")
+            input()
+        elif action == "c":
+            print("Tu tirada de copia ha sido de " + str(d(20, "copia")) + " + [" + str(pj.stats["copia"]) + "]")
+            input()
+        elif action == "a":
+            print("Tu tirada de carisma ha sido de " + str(d(20, "carisma")) + " + [" + str(pj.stats["carisma"]) + "]")
+            input()
+        elif action == "p":
+            print("Tu tirada de pilotaje ha sido de " + str(d(20, "pilotaje")) + " + [" + str(pj.stats["pilotaje"]) + "]")
+            input()
+        elif action == "l":
+            print("Tu tirada de lógica ha sido de " + str(d(20, "logica")) + " + [" + str(pj.stats["logica"]) + "]")
+            input()
+        elif action == "n":
+            print("Tu tirada ha sido de " + str(d(20)))
+            input()
+
     elif action == "i":
         clear()
-        print("Has seleccionado inventario")
-        print(color.PURPLE + "Tienes " + str(pj.nofils) + " nofils." + color.END)
-        print(color.BOLD + "Tus objetos son:" + color.END)
+        printc("Has seleccionado inventario" + "\n"
+        + color.PURPLE + "Tienes " + str(pj.nofils) + " nofils." + color.END + "\n"
+        + color.BOLD + "Tus objetos son:" + color.END + "\n")
         for item in pj.items.keys():
             print("-> " + item + " x" + str(pj.items[item][1]) + "\t\t\t" + str(float(pj.items[item][0])/1000) + "kg")
         action = process_input("Selecciona una opción:\n\tAñadir objeto [a]\tModificar nofils [m]\tTirar objeto [t]\tNotas[n]", set(["a", "m", "t", "n"]))
         if action == "a":
             clear()
-            print("¿Qué objeto quieres añadir?")
+            printc("¿Qué objeto quieres añadir?")
             objeto = input()
             clear()
             if objeto in pj.items.keys():
                 pj.items[objeto][1] += 1
             else:
-                print("¿Cuántos gramos pesa?")
+                printc("¿Cuántos gramos pesa?")
                 peso = int(input())
                 pj.items[objeto] = [peso, 1]
-            print(objeto + " ha sido añadido a tu inventario.")
+            printc(objeto + " ha sido añadido a tu inventario.")
 
         elif action == "m":
             clear()
-            print("¿Cuánto cambian tus nofils?")
+            printc("¿Cuánto cambian tus nofils?")
             cambio = input()
             if pj.nofils + int(cambio) < 0:
-                print("Estás arruinado.")
+                printc("Estás arruinado.")
             else:
                 pj.nofils += int(cambio)
-                print("Tu balance actual es de " + str(pj.nofils) + " nofils")
+                printc("Tu balance actual es de " + str(pj.nofils) + " nofils")
         input()
     elif action == "c":
         tirada = d(2)
-        print("Has elegido cargar. Consigues " + str(tirada) + " cargas de ki.")
+        printc("Has elegido cargar. Consigues " + str(tirada) + " cargas de ki.")
         pj.cargas_ki += tirada
         input()
     elif action == "e":
-        print("Tu tirada de esquivar ha sido " + str(d(20, "destreza")) + " + [" + str(pj.stats["destreza"]) + "]")
+        printc("Tu tirada de esquivar ha sido " + str(d(20, "destreza")) + " + [" + str(pj.stats["destreza"]) + "]")
         input()
     else:
         clear()
-        print("Esa no es una opción mongolo")
+        printc("Esa no es una opción mongolo")
         input()
         clear()
+
+def printc(msg):
+    global context
+    context = msg
+    print(msg)
 
 def play():
     global s
     global pj
     while (True):
         clear()
-        print(color.BOLD + "\t\t" + pj.nombre + color.END)
-        print(color.BLUE + "\t" +"FUERZA = " + str(pj.stats["fuerza"]) + "\tDESTREZA = " + str(pj.stats["destreza"]) + color.END)
-        print(color.BLUE + "\t" + "KI = " + str(pj.stats["ki"]) + "\t\tCARISMA = " + str(pj.stats["carisma"]) + color.END)
-        print(color.BLUE + "\t" + "PILOTAJE = " + str(pj.stats["pilotaje"]) + "\tJINCHONERÍA = " + str(pj.stats["jinchoneria"]) + color.END)
-        print(color.BLUE + "\t" + "LÓGICA = " + str(pj.stats["logica"]) + "\tCOPIA = " + str(pj.stats["copia"]) + color.END)
-        print(color.GREEN + "\t" + "VIDA = " + str(pj.salud_actual) + "/" + str(pj.salud) + "\tCARGAS DE KI = " + str(pj.cargas_ki) + color.END)
-        print("Elige una acción:\n\tAtacar [a]\tEsquivar [e]\tInventario [i]\tCargar [c]\tVolver [v]")
+        printc(color.BOLD + "\t\t" + pj.nombre + color.END + "\n"
+        + color.BLUE + "\t" +"FUERZA = " + str(pj.stats["fuerza"]) + "\tDESTREZA = " + str(pj.stats["destreza"]) + color.END + "\n"
+        + color.BLUE + "\t" + "KI = " + str(pj.stats["ki"]) + "\t\tCARISMA = " + str(pj.stats["carisma"]) + color.END + "\n"
+        + color.BLUE + "\t" + "PILOTAJE = " + str(pj.stats["pilotaje"]) + "\tJINCHONERÍA = " + str(pj.stats["jinchoneria"]) + color.END + "\n"
+        + color.BLUE + "\t" + "LÓGICA = " + str(pj.stats["logica"]) + "\tCOPIA = " + str(pj.stats["copia"]) + color.END + "\n"
+        + color.GREEN + "\t" + "VIDA = " + str(pj.salud_actual) + "/" + str(pj.salud) + "\tCARGAS DE KI = " + str(pj.cargas_ki) + color.END + "\n"
+        + "Elige una acción:\n\tAtacar [a]\tEsquivar [e]\tInventario [i]\tCargar [c]\tVolver [v]\n\tTirar dado [d]")
         action = input()
         if action.lower() == "v":
             #Volver
-
+            if online:
+                s.sendall("logout".encode("utf-8"))
 
 
             file = open(pj.nombre + ".txt", "w")
@@ -359,7 +427,7 @@ def play():
             file.write(str(pj.cargas_ki) + "\n")
             file.write(str(pj.nofils) + "\n")
             for item in pj.items.keys():
-                file.write(str(pj.items[item][0]) + " " + str(pj.items[item][1]) + " " + str(item))
+                file.write(str(pj.items[item][0]) + " " + str(pj.items[item][1]) + " " + str(item) + "\n")
             file.close()
 
 
@@ -384,6 +452,8 @@ def connect():
     s.sendall(b'El jugador ha establecido conexion.')
     clear()
     print("Estás en línea. Bienvenido a Dragon Ball R Online.")
+    t = threading.Thread(target = online_thread)
+    t.start()
     input()
     online = True
     clear()

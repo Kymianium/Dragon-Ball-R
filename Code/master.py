@@ -40,12 +40,33 @@ def main_menu():
         action = rol.process_input(color.BOLD + "\t\tDragon Ball Rol: Master Edition\n\n"
         + color.END + "Hola, Juan. " + random.choice(saludo) + "\n\t -> Lista de jugadores [lista]" +
         "\n\t -> Crear personaje [crear]\n\t -> Enviar mensaje [mensaje]\n\t -> Cargar personaje [cargar]\n\t -> Tienda [tienda]\n\t -> Subir de nivel [nivel]",
-        set(["lista"]))
+        set(["lista", "mensaje"]))
+        print(action)
         if action == "lista":
+            rol.clear()
             s.sendall("admin list".encode("utf-8"))
             answer = s.recv(2048)
-            print(answer.decode("utf-8"))
-
+            print(answer.decode("utf-8")[:-1])
+            input()
+        elif action == "mensaje":
+            rol.clear()
+            s.sendall("admin msg1".encode("utf-8"))
+            list = s.recv(2048).decode("utf-8")
+            list = list.split("\n")[:-1]
+            while True:
+                print("¿A quién quieres enviarle el mensaje?")
+                for p in list:
+                    print("--> " + p)
+                pyr = input()
+                if not pyr in list:
+                    print("Creo que has escrito mal el nombre Juan, deja los porros.")
+                    input()
+                    continue
+                break
+            print("Escribe el mensaje")
+            msg = input()
+            msg = "admin msg2 " + pyr + " " + msg
+            s.sendall(msg.encode("utf-8"))
 #Comienzo del programa
 main_menu()
 
