@@ -463,7 +463,7 @@ def main_menu():
             print(color.BOLD + "Status: " + color.GREEN + "ONLINE" + color.END)
         else:
             print(color.BOLD + "Status: " + color.RED + "OFFLINE" + color.END)
-        print("Selecciona una opción:\n \t -> Crear un personaje [crear]\n\t -> Cargar un personaje [cargar]\n\t -> Conectarse al servidor [conectar]\n\t -> Comprobar conexión con el servidor [ping]")
+        print("Selecciona una opción:\n \t -> Crear un personaje [crear]\n\t -> Cargar un personaje [cargar]\n\t -> Conectarse al servidor [conectar]\n\t -> Comprobar conexión con el servidor [ping]\n\t -> Desactivar colores [colores]")
         command = input()
         if command.lower() == "crear":
             create()
@@ -473,6 +473,17 @@ def main_menu():
             connect()
         elif command.lower() == "ping":
             ping()
+        elif command.lower() == "colores":
+            color.PURPLE = ""
+            color.CYAN = ""
+            color.DARKCYAN = ""
+            color.BLUE = ""
+            color.GREEN = ""
+            color.YELLOW = ""
+            color.RED = ""
+            color.BOLD = ""
+            color.UNDERLINE = ""
+            color.END = ""
         else:
             print("No has escrito un comando correcto. Vuelve a intentarlo.")
 def ping():
