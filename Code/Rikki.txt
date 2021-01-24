@@ -1,0 +1,15 @@
+Personaje de DBR:
+10
+42
+20
+0
+0
+0
+0
+2
+humano
+ninja
+p
+143
+53
+100

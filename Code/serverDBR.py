@@ -13,7 +13,7 @@ class color:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
     END = '\033[0m'
-
+store = {}
 player_list = {}
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,6 +28,9 @@ PORT = 1729
 server.bind((IP, PORT))
 
 server.listen(10) #10 es el número máximo de conexiones que acepta
+
+print(color.BOLD + "El servidor está operativo." + color.END)
+
 
 def playerthread(conn, addr):
     print(color.BOLD + "Nuevo hilo creado" + color.END)
@@ -64,10 +67,9 @@ def playerthread(conn, addr):
                         print(color.BOLD + amsg[2] + color.END)
                         player_list[dst].sendall(amsg[2].encode("utf-8"))
 
-
-
-
-
+                elif command[0] == "adminmsg":
+                    print(color.PURPLE + player + " quiere enviar un mensaje al admin." + color.END)
+                    print(color.BOLD + command[1] + color.END)
 
                 elif command[0] == "login":
                     print(color.PURPLE + "Login:" + color.END)

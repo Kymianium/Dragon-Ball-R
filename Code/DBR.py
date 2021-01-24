@@ -1,5 +1,5 @@
 from character import Character
-import random, socket, time, threading
+import random, socket, time, threading, sprites
 
 HOST = '127.0.0.1'
 PORT = 1729
@@ -230,6 +230,11 @@ def load():
         s.sendall(message.encode('utf-8'))
     play()
 
+def send_admin(msg):
+    global s
+    msg = "adminmsg " + msg
+    s.sendall(msg.encode("utf-8"))
+    clear()
 
 def clear():
     for i in range(0,100):
@@ -305,6 +310,14 @@ def process_action(action):
                         print("Con tu técnica fuerte, haces " + str(d(10, "ki")) + " + [" + str(pj.stats["ki"]) + "] de daño." )
                         pj.cargas_ki -= 4
             input()
+    elif action=="s":
+        clear()
+        print("¿Cuánto ha variado tu salud?")
+        dmg = int(input())
+        pj.salud_actual += dmg
+        clear()
+        print("Tu salud actual es de " + str(pj.salud_actual))
+        input()
     elif action=="d":
         action = process_input("¿De qué quieres que sea tu tirada?"
         + "\n\tFuerza [F]\tDestreza [D]\tKi [K]\tJinchonería [J]\tCopia [C]\n\tCarisma [A]\tPilotaje [P]\tLógica [L]\tTirada plana [N]", set(["f", "d", "k", "j", "c", "a", "p", "l", "n"]))
@@ -366,15 +379,41 @@ def process_action(action):
                 printc("Estás arruinado.")
             else:
                 pj.nofils += int(cambio)
-                printc("Tu balance actual es de " + str(pj.nofils) + " nofils")
-        input()
+                print("Tu balance actual es de " + str(pj.nofils) + " nofils")
+            input()
+        elif action == "t":
+            print("¿Qué objeto quieres tirar?")
+            it = input()
+            if it in pj.items.keys():
+                if pj.items[it][1]>1:
+                    pj.items[it][1]-=1
+                else:
+                    del pj.items[it]
+                print("Has tirado " + item)
+            else:
+                print("No se ha encontrado " + item + " en tu inventario.")
+            input()
     elif action == "c":
         tirada = d(2)
         printc("Has elegido cargar. Consigues " + str(tirada) + " cargas de ki.")
         pj.cargas_ki += tirada
         input()
+    elif action == "m":
+        print(color.DARKCYAN + "Escribe tu mensaje" + color.END)
+        msg = input()
+        send_admin(msg)
     elif action == "e":
         printc("Tu tirada de esquivar ha sido " + str(d(20, "destreza")) + " + [" + str(pj.stats["destreza"]) + "]")
+        input()
+    elif action == "t":
+        clear()
+        action = process_input("¿De qué tienda quieres comprar?\n\t-> Namek [n]\n\t-> La Tierra [t]",
+        set(["n", "t"]))
+        clear()
+        if action == "n":
+            print(color.GREEN + sprites.piccolo + color.END)
+        elif action == "t":
+            print(color.BLUE + sprites.purr + color.END)
         input()
     else:
         clear()
@@ -398,7 +437,7 @@ def play():
         + color.BLUE + "\t" + "PILOTAJE = " + str(pj.stats["pilotaje"]) + "\tJINCHONERÍA = " + str(pj.stats["jinchoneria"]) + color.END + "\n"
         + color.BLUE + "\t" + "LÓGICA = " + str(pj.stats["logica"]) + "\tCOPIA = " + str(pj.stats["copia"]) + color.END + "\n"
         + color.GREEN + "\t" + "VIDA = " + str(pj.salud_actual) + "/" + str(pj.salud) + "\tCARGAS DE KI = " + str(pj.cargas_ki) + color.END + "\n"
-        + "Elige una acción:\n\tAtacar [a]\tEsquivar [e]\tInventario [i]\tCargar [c]\tVolver [v]\n\tTirar dado [d]")
+        + "Elige una acción:\n\tAtacar [a]\tEsquivar [e]\tInventario [i]\tCargar [c]\tVolver [v]\n\tTirar dado [d]\tModificar salud [s]\tMensaje al master [m]\tTienda [t]")
         action = input()
         if action.lower() == "v":
             #Volver
@@ -419,7 +458,7 @@ def play():
             file.write(str(pj.raza) + "\n")
             file.write(str(pj.clase) + "\n")
             file.write(pj.arma + "\n")
-            file.write(str(pj.salud) + "\n")
+            file.write(str(pj.salud_actual) + "\n")
             file.write(str(pj.cargas_ki) + "\n")
             file.write(str(pj.nofils) + "\n")
             for item in pj.items.keys():
